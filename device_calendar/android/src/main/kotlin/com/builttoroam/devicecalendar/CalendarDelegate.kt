@@ -409,20 +409,32 @@ class CalendarDelegate : PluginRegistry.RequestPermissionsResultListener {
         values.put(Events.ALL_DAY, event.allDay)
 
         if (event.allDay) {
-            val calendar = java.util.Calendar.getInstance()
-            calendar.timeInMillis = event.start!!
-            calendar.set(java.util.Calendar.HOUR, 0)
-            calendar.set(java.util.Calendar.MINUTE, 0)
-            calendar.set(java.util.Calendar.SECOND, 0)
-            calendar.set(java.util.Calendar.MILLISECOND, 0)
-
             // All day events must have UTC timezone
-            val utcTimeZone =  TimeZone.getTimeZone("UTC")
-            calendar.timeZone = utcTimeZone
+            val utcTimeZone = TimeZone.getTimeZone("UTC")
 
-            values.put(Events.DTSTART, calendar.timeInMillis)
-            values.put(Events.DTEND, calendar.timeInMillis)
+            val calendarStart = java.util.Calendar.getInstance(utcTimeZone)
+            calendarStart.timeInMillis = event.start!!
+            calendarStart.set(java.util.Calendar.HOUR, 0)
+            calendarStart.set(java.util.Calendar.MINUTE, 0)
+            calendarStart.set(java.util.Calendar.SECOND, 0)
+            calendarStart.set(java.util.Calendar.MILLISECOND, 0)
+
+            // All Day events can span multiple days, but must also end at midnight
+            val calendarEnd = java.util.Calendar.getInstance(utcTimeZone)
+            calendarEnd.timeInMillis = event.end!!
+            calendarEnd.set(java.util.Calendar.HOUR, 0)
+            calendarEnd.set(java.util.Calendar.MINUTE, 0)
+            calendarEnd.set(java.util.Calendar.SECOND, 0)
+            calendarEnd.set(java.util.Calendar.MILLISECOND, 0)
+
+            // Add one day to the end date since All-Day events in Calendar Provider end at
+            // midnight at the beginning of the next day.
+            calendarEnd.add(java.util.Calendar.DATE, 1)
+
+            values.put(Events.DTSTART, calendarStart.timeInMillis)
+            values.put(Events.DTEND, calendarEnd.timeInMillis)
             values.put(Events.EVENT_TIMEZONE, utcTimeZone.id)
+            values.put(Events.EVENT_END_TIMEZONE, utcTimeZone.id)
         }
         else {
             values.put(Events.DTSTART, event.start!!)

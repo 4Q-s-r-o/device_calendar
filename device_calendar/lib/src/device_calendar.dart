@@ -204,8 +204,8 @@ class DeviceCalendarPlugin {
 
     // Setting time to 0 for all day events
     if (event.allDay == true) {
-      event.start = DateTime(event.start.year, event.start.month, event.start.day, 0, 0, 0);
-      event.end = DateTime(event.end.year, event.end.month, event.end.day, 0, 0, 0);
+      event.start = DateTime.utc(event.start.year, event.start.month, event.start.day, 0, 0, 0);
+      event.end = DateTime.utc(event.end.year, event.end.month, event.end.day, 0, 0, 0);
     }
 
     if (event.allDay == true && (event?.calendarId?.isEmpty ?? true) || event.start == null || event.end == null) {
